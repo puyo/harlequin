@@ -1,5 +1,3 @@
-// ----------------------------------------------------------------------
-
 class Sum {
     constructor() {
         this.timesSummed = 0
@@ -24,7 +22,7 @@ class Sum {
 
 // ----------------------------------------------------------------------
 
-const harlequin = require('./harlequin')
+let harlequin = require('./harlequin')
 
 harlequin.check(c => {
     c.context({ sum: new Sum() })
@@ -75,6 +73,30 @@ harlequin.check({
         }
     ]
 })
+
+// ----------------------------------------------------------------------
+
+harlequin = require('./harlequin')
+
+harlequin
+    .code(() => sum.calc(a, b, c))
+    .context({ sum: new Sum() })
+    .context({ a: 1, b: 2, c: 3 })
+        .returns(6)
+
+harlequin
+    .code(() => sum.calc(a, b, c))
+    .context({ sum: new Sum() })
+    .context({ a: 1, b: 2, c: 3 })
+        .returns(6)
+    .context({ a: 2, b: 4, c: 6 })
+        .returns(12)
+        .note("increments counter").changes(() => sum.timesSummed).by(1)
+    .context({ a: undefined })
+        .throws(Error, "a was undefined")
+    .code(() => sum.setCounter(10))
+        .returns(undefined)
+        .note("sets counter").changes(() => sum.timesSummed).to(10)
 
 // ----------------------------------------------------------------------
 // using ava
