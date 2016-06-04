@@ -4,8 +4,7 @@ const debug = require('debug')('harlequin')
 
 class H {
     constructor() {
-        this._context = { _cache: {} }
-        this._contextDoc = {}
+        this._context = [{ _cache: {} }]
         this._indent = 0
     }
 
@@ -20,29 +19,26 @@ class H {
         for (let k in ctx) {
             var val = ctx[k]
             if (typeof val === 'function') {
-                debug('Adding property ' + k + ' to context object with value ' + val)
-                Object.defineProperty(this._context, k, {
+                //debug('Adding property ' + k + ' to context object with value ' + val)
+                Object.defineProperty(this._currentContext(), k, {
                     get: function () {
                         return this._cache[k] = this._cache[k] || val()
                     }
                 })
             } else {
-                Object.defineProperty(this._context, k, {
-                    value: val
-                })
+                this._currentContext()[k] = val
+                // Object.defineProperty(this._currentContext(), k, {
+                //     value: val
+                // })
             }
         }
-        Object.assign(this._contextDoc, ctx)
-        console.log(this._indentPad() + stringify(ctx))
+        console.log(this._indentPad(), ctx)
         this._incrementIndent()
         return this
     }
 
     test(desc) {
-        // if (this._testIndent) {
-        //     // reset to previous test indent
-        //     this._indent = this._testIndent
-        // }
+        this._push()
         this._desc = desc
         return this
     }
@@ -60,7 +56,7 @@ class H {
         ].join(' ')
         let result = this._execute()
         this._printNote(result === value)
-        this._clearTest()
+        this._pop()
         return this
     }
 
@@ -88,7 +84,7 @@ class H {
         let before = beforeAfter[0]
         let after = beforeAfter[1]
         this._printNote(after === before + val)
-        this._clearTest()
+        this._pop()
         return this
     }
 
@@ -107,13 +103,23 @@ class H {
         ].join("\n")
         let after = this._execute(code)
         this._printNote(after === val)
-        this._clearTest()
+        this._pop()
         return this
     }
 
-    _clearTest() {
-        this._testContext = undefined
-        this._testIndent = undefined
+    _currentContext() {
+        return this._context[this._context.length - 1]
+    }
+
+    _push() {
+        var newContext = Object.assign({}, this._currentContext(), {_cache: {}})
+        newContext = this._currentContext()
+        this._context.push(newContext)
+    }
+
+    _pop() {
+        this._context.pop()
+        this._indent -= 1
     }
 
     _incrementIndent() {
@@ -135,7 +141,7 @@ class H {
         } else {
             color = 'red'
         }
-        console.log(chalk[color].call(chalk, this._note))
+        console.log(chalk[color](this._note))
         this._note = undefined
     }
 
@@ -144,11 +150,14 @@ class H {
         // This is a nasty hack to enable re-binding => functions
         // TODO: field test this better, maybe a different solution
 
+        let ctx = this._currentContext()
+        debug('Executing code. context:', ctx, 'code:', code, ctx.sum)
+
         let wrapper = function() {
             let localCode = eval(String(code))
             return localCode()
         }
-        return wrapper.bind(this._context)()
+        return wrapper.bind(ctx)()
     }
 }
 

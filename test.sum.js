@@ -3,27 +3,15 @@ const harlequin = require('./harlequin')
 
 harlequin
     .code(() => this.sum.calc(this.a, this.b, this.c))
-    .context({sum: () => new Sum()}) // push
-    .test("Adds to six")             // push
-        .context({a: 1, b: 2, c: 3}) // push
-        .returns(6)                  // pop
-        // .context({a: 2, b: 2, c: 3}) // push // error
-        // .returns(7)                  // pop
-    // .test("Adds to seven")           // push
-        // .context({a: 2, b: 2, c: 3}) // push
-        // .returns(7)
-
-// harlequin
-//     .code(() => sum().calc(a(), b(), c()))
-//     .context({sum: () => new Sum()})
-//     .test("Adds to six")
-//         .context({a: 1, b: 2, c: 3})
-//         .returns(6)
-//         .context({a: 2, b: 2, c: 3})
-//         .returns(7)
-//     .test("Adds to seven")
-//         .context({a: 2, b: 2, c: 3})
-//         .returns(7)
+    .context({ sum: () => new Sum() })                 // NB: needs scope from this file, eval solution doesn't work
+    .test("Adds to six")                               // push
+        .context({ a: 1, b: 2, c: 3 })                 //
+        .returns(6)                                    // pop
+        // .context({a: 2, b: 2, c: 3})                // error: redefining a
+        // .returns(7)                                 // pop (error, double pop?)
+    .test("Adds to seven")                             // push
+        .context({ a: 2, b: 2, c: 3 })                 // push
+        .returns(7)                                    // pop
 
     // .test("Initialises times summed")
     //     .context({sum: () => new Sum(10)})
