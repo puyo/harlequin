@@ -58,7 +58,7 @@ class H {
             value
         ].join(' ')
         let result = this._execute()
-        this._printNote(result === value)
+        this._assertEqual(result, value)
         this._pop()
         return this
     }
@@ -80,7 +80,7 @@ class H {
         let before = this._execute(this._changesCodeTest)
         let result = this._execute()
         let after = this._execute(this._changesCodeTest)
-        this._printNote(after === before + val)
+        this._assertEqual(after, before + val)
         this._pop()
         return this
     }
@@ -99,7 +99,7 @@ class H {
             "after"
         ].join("\n")
         let after = this._execute(code)
-        this._printNote(after === val)
+        this._assertEqual(after, val)
         this._pop()
         return this
     }
@@ -131,14 +131,13 @@ class H {
         return result.join('')
     }
 
-    _printNote(pass) {
-        let color
+    _assertEqual(actual, expected) {
+        let pass = actual === expected
         if (pass) {
-            color = 'green'
+            console.log(chalk.green(this._note))
         } else {
-            color = 'red'
+            console.log(chalk.red(this._note, actual, '!==', expected))
         }
-        console.log(chalk[color](this._note))
         this._note = undefined
     }
 
