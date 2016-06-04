@@ -10,36 +10,39 @@ class H {
 
     code(fn) {
         this._code = fn
-        console.log(this._indentPad() + fn)
+        //console.log(this._indentPad() + fn)
         this._incrementIndent()
         return this
     }
 
-    context(ctx) {
-        for (let k in ctx) {
-            var val = ctx[k]
+    context(newContext) {
+        var ctx = this._currentContext()
+        for (let k in newContext) {
+            var val = newContext[k]
             if (typeof val === 'function') {
-                //debug('Adding property ' + k + ' to context object with value ' + val)
-                Object.defineProperty(this._currentContext(), k, {
+                debug('Adding property ' + k + ' to context', ctx, ' with value ' + val)
+                Object.defineProperty(ctx, k, {
                     get: function () {
                         return this._cache[k] = this._cache[k] || val()
-                    }
+                    },
+                    enumerable: true
                 })
             } else {
-                this._currentContext()[k] = val
-                // Object.defineProperty(this._currentContext(), k, {
-                //     value: val
-                // })
+                //this._currentContext()[k] = val
+                Object.defineProperty(ctx, k, {
+                    value: val,
+                    enumerable: true
+                })
             }
         }
-        console.log(this._indentPad(), ctx)
+        //console.log(this._indentPad(), newContext)
         this._incrementIndent()
         return this
     }
 
-    test(desc) {
+    test(note) {
         this._push()
-        this._desc = desc
+        this._note = note
         return this
     }
 
@@ -73,16 +76,10 @@ class H {
             "by",
             val
         ].join(' ')
-        let code = [
-            "var before = " + this._changesCodeTest,
-            this._code,
-            "var after = " + this._changesCodeTest,
-            "var beforeAfter = [before, after]",
-            "beforeAfter"
-        ].join("\n")
-        let beforeAfter = this._execute(code)
-        let before = beforeAfter[0]
-        let after = beforeAfter[1]
+
+        let before = this._execute(this._changesCodeTest)
+        let result = this._execute()
+        let after = this._execute(this._changesCodeTest)
         this._printNote(after === before + val)
         this._pop()
         return this
@@ -113,7 +110,7 @@ class H {
 
     _push() {
         var newContext = Object.assign({}, this._currentContext(), {_cache: {}})
-        newContext = this._currentContext()
+        //newContext = this._currentContext()
         this._context.push(newContext)
     }
 
