@@ -1,10 +1,7 @@
 class Sum {
     constructor(timesSummed = 0) {
+        //console.log('XYZ new Sum')
         this.timesSummed = timesSummed
-    }
-
-    getTimesSummed() {
-        return this.timesSummed
     }
 
     calc(a, b, c) {

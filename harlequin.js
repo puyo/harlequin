@@ -39,6 +39,19 @@ class H {
         return this
     }
 
+    throws(value) {
+        this._testNote = [ "throws", value ]
+        var e = undefined
+        try {
+            this._execute()
+        } catch (x) {
+            e = x && x.__proto__ && x.__proto__.constructor
+        }
+        this._assertEqual(e, value)
+        this._pop()
+        return this
+    }
+
     returns(value) {
         this._testNote = [ "returns", value ]
         let result = this._execute()
@@ -128,21 +141,11 @@ class H {
     }
 
     _execute(code = this._code) {
-
         let ctx = this._currentContext()
         debug("EXEC")
         debug("     context: ", ctx)
         debug("     code:", code)
-
-        // This is a nasty hack to enable re-binding arrow functions
-        //
-        // TODO: field test this better, maybe a different solution
-
-        let wrapper = function() {
-            let localCode = eval(String(code))
-            return localCode()
-        }
-        return wrapper.bind(ctx)()
+        return code(ctx)
     }
 }
 
